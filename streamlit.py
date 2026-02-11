@@ -88,7 +88,7 @@ with tab2:
     w2 = model.layer_02.weight.detach().numpy()
     w1 = model.layer_01.weight.detach().numpy()
 
-    st.header(f"Insgesamt hat unser model {vocabulary_size * 2 * 2} Gewichte")
+    st.header(f"Insgesamt hat unser Modell {vocabulary_size * 2 * 2} Gewichte")
 
     st.subheader("Gewichte auf Ebene 1")
     st.write(w1)
