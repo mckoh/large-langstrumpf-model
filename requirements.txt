@@ -17,4 +17,5 @@ lightning
 pandas
 seaborn
 scikit-learn
-streamlit
+streamlit==1.54.0
+
