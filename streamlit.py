@@ -1,61 +1,93 @@
 # %%
 import streamlit as st
 import torch
-import torch.nn as nn
-
-from torch.optim import Adam
-from torch.distributions.uniform import Uniform
-from torch.utils.data import TensorDataset, DataLoader
-
 import lightning as L
-
-import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-
+import lightning as L
+from torch.utils.data import TensorDataset, DataLoader
 from word_splitter import Preprocessor
 from word_embedder import WordEmbedder
-import lightning as L
-from numpy import argmax
 from matplotlib import pyplot as plt
+from loss_logger import LossHistory
+
+
+MARKER_SIZE = 24
+MARKER_COLOR = "black"
+EDGE_COLOR = "black"
+EDGE_WIDTH = 1
 
 
 st.set_page_config(
     page_title="Large Langstrumpf Model",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        'Get Help': 'https://www.extremelycoolapp.com/help',
-        'Report a bug': "https://www.extremelycoolapp.com/bug",
-        'About': "# This is a header. This is an *extremely* cool app!"
-    }
+    initial_sidebar_state="expanded"
 )
 
-st.title("Large Langstrumpf Model")
 
+st.sidebar.title("Large Langstrumpf Model")
+
+st.sidebar.header("Modell Einstellungen")
 # Data Loading and Preprocessing
-training_text = "Pipilotta Viktualia Pfefferminza Rollgardina Efraimstochter Langstrumpf EOF"
-training_text = st.sidebar.text_area("Gib einen Trainingstext ein", training_text)
+training_text = st.sidebar.text_area(
+    "Trainingstext",
+    "Pipilotta Viktualia Pfefferminza Rollgardina Efraimstochter Langstrumpf"
+)
+
+if "text" not in st.session_state:
+    st.session_state["text"] = training_text
+else:
+    training_text = st.session_state["text"]
+
 pp = Preprocessor()
 pp.fit(training_text)
 X, y = pp.make_data(training_text)
 
-epochs = st.sidebar.number_input("Anzahl Epochen", 0, 100, 50)
+epochs = st.sidebar.slider("Anzahl Epochen", 0, 100, 50)
 
 vocabulary_size = pp.vocabulary_size
+data = TensorDataset(torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32))
+loader = DataLoader(data, batch_size=vocabulary_size)
+loss_history = LossHistory()
 
 # Model Loading
-data = TensorDataset(torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32))
-loader = DataLoader(data)
-model = WordEmbedder(vocabulary_size=vocabulary_size)
-trainer = L.Trainer(max_epochs=epochs)
-trainer.fit(model, train_dataloaders=loader)
+def train():
+    model = WordEmbedder(vocabulary_size=vocabulary_size)
+    trainer = L.Trainer(max_epochs=epochs, callbacks=[loss_history])
+    trainer.fit(model, train_dataloaders=loader)
+    return model
 
-# Visualization
-word = st.sidebar.selectbox("Word eingeben", training_text.split())
+if 'model' not in st.session_state:
+    model = train()
+    st.session_state["model"] = model
+    loss = loss_history.train_losses
+    st.session_state["loss"] = loss
+else:
+    model = st.session_state["model"]
+    loss = st.session_state["loss"]
+
+# Loss Plot
+st.sidebar.header("Loss Plot")
+fig, ax = plt.subplots()
+ax.plot(loss, label="Train Loss")
+ax.set_xlabel("Iterationen")
+ax.set_ylabel("Loss")
+ax.set_title("Loss-Verlauf")
+st.sidebar.pyplot(fig)
+
+if st.sidebar.button("Train Model"):
+    model = train()
+    st.session_state["model"] = model
+    loss = loss_history.train_losses
+    st.session_state["loss"] = loss
+
+# Get Test Input
+st.header("Input für Modell")
+word = st.selectbox("Welches Wort wollen wir durch das Modell schicken?", training_text.split())
 word = pp.transform(word)
 
+# Visualization
+st.header("Erregung im Modell")
 predictions = list(model.predict(torch.tensor(word, dtype=torch.float32)).detach().numpy())[0]
 input_x = [1]*vocabulary_size
 input_y = list(range(1, vocabulary_size+1))
@@ -73,29 +105,20 @@ w2 = ((w2-w2.min()) / (w2.max()-w2.min()))*3
 embeddings = model.embedd(torch.tensor(word, dtype=torch.float32)).detach().numpy()[0]
 embeddings = (embeddings-min(embeddings))/(max(embeddings)-min(embeddings))
 
-MARKER_SIZE = 24
-MARKER_COLOR = "black"
-EDGE_COLOR = "black"
-EDGE_WIDTH = 1
-
-
 fig, ax = plt.subplots()
 ax.axis(False)
 
-# Connection Input-Hidden
 for i in range(len(input_x)):
     for j in range(len(hidden_x)):
         ax.plot([input_x[i], hidden_x[j]], [input_y[i], hidden_y[j]], color=EDGE_COLOR, linewidth=w1[j,i])
 
-# Connections Hidden-Output
 for i in range(len(output_x)):
     for j in range(len(hidden_x)):
         ax.plot([output_x[i], hidden_x[j]], [output_y[i], hidden_y[j]], color=EDGE_COLOR, linewidth=w2[i,j])
 
-# Nodes
-#ax.plot(input_x, input_y, "o", color=MARKER_COLOR, markersize=MARKER_SIZE)
-#ax.plot(hidden_x, hidden_y, "o", color=MARKER_COLOR, markersize=MARKER_SIZE)
-#ax.plot(output_x, output_y, "o", color=MARKER_COLOR, markersize=MARKER_SIZE)
+ax.plot(input_x, input_y, "o", color="white", markersize=MARKER_SIZE+4)
+ax.plot(hidden_x, hidden_y, "o", color="white", markersize=MARKER_SIZE+4)
+ax.plot(output_x, output_y, "o", color="white", markersize=MARKER_SIZE+4)
 
 for i in range(len(hidden_x)):
     ax.plot(hidden_x[i], hidden_y[i], "o", color=MARKER_COLOR, markersize=MARKER_SIZE, alpha=min(embeddings[i]+0.1, 1))
@@ -119,6 +142,4 @@ for i, value in enumerate(predictions):
     ax.text(x=4, y=i+1, s=round(value, 2))
 
 st.pyplot(fig)
-
-
 
