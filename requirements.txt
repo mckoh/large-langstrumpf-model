@@ -1,0 +1,19 @@
+
+# Torch for Cuda is not hosted on pypi but is hosted
+# on a separate index by pytorch
+--extra-index-url https://download.pytorch.org/whl/cu126
+
+torch
+torchvision
+torchaudio
+
+matplotlib
+numpy
+jupyter
+ipython
+numpy
+datetime
+lightning
+pandas
+seaborn
+scikit-learn
