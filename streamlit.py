@@ -81,65 +81,80 @@ if st.sidebar.button("Train Model"):
     loss = loss_history.train_losses
     st.session_state["loss"] = loss
 
-# Get Test Input
-st.header("Input für Modell")
-word = st.selectbox("Welches Wort wollen wir durch das Modell schicken?", training_text.split())
-word = pp.transform(word)
+# Page Content
+tab1, tab2 = st.tabs(["📈 Model Test", "🗃 Gewichte"])
 
-# Visualization
-st.header("Erregung im Modell")
-predictions = list(model.predict(torch.tensor(word, dtype=torch.float32)).detach().numpy())[0]
-input_x = [1]*vocabulary_size
-input_y = list(range(1, vocabulary_size+1))
-hidden_x = [2, 2]
-hidden_y = [vocabulary_size/2, vocabulary_size/2+1]
-output_x = [3]*vocabulary_size
-output_y = range(1, vocabulary_size+1)
+with tab2:
+    w2 = model.layer_02.weight.detach().numpy()
+    w1 = model.layer_01.weight.detach().numpy()
 
-w1 = model.layer_01.weight.detach().numpy()
-w1 = ((w1-w1.min()) / (w1.max()-w1.min()))*3
+    st.header(f"Insgesamt hat unser model {vocabulary_size * 2 * 2} Gewichte")
 
-w2 = model.layer_02.weight.detach().numpy()
-w2 = ((w2-w2.min()) / (w2.max()-w2.min()))*3
+    st.subheader("Gewichte auf Ebene 1")
+    st.write(w1)
 
-embeddings = model.embedd(torch.tensor(word, dtype=torch.float32)).detach().numpy()[0]
-embeddings = (embeddings-min(embeddings))/(max(embeddings)-min(embeddings))
+    st.subheader("Gewichte auf Ebene 2")
+    st.write(w2)
 
-fig, ax = plt.subplots()
-ax.axis(False)
+with tab1:
+    # Get Test Input
+    st.header("Modell Testen")
+    word = st.selectbox("Welches Wort wollen wir durch das Modell schicken?", training_text.split())
+    word = pp.transform(word)
 
-for i in range(len(input_x)):
-    for j in range(len(hidden_x)):
-        ax.plot([input_x[i], hidden_x[j]], [input_y[i], hidden_y[j]], color=EDGE_COLOR, linewidth=w1[j,i])
+    # Visualization
+    predictions = list(model.predict(torch.tensor(word, dtype=torch.float32)).detach().numpy())[0]
+    input_x = [1]*vocabulary_size
+    input_y = list(range(1, vocabulary_size+1))
+    hidden_x = [2, 2]
+    hidden_y = [vocabulary_size/2, vocabulary_size/2+1]
+    output_x = [3]*vocabulary_size
+    output_y = range(1, vocabulary_size+1)
 
-for i in range(len(output_x)):
-    for j in range(len(hidden_x)):
-        ax.plot([output_x[i], hidden_x[j]], [output_y[i], hidden_y[j]], color=EDGE_COLOR, linewidth=w2[i,j])
+    w1 = model.layer_01.weight.detach().numpy()
+    w1 = ((w1-w1.min()) / (w1.max()-w1.min()))*3
 
-ax.plot(input_x, input_y, "o", color="white", markersize=MARKER_SIZE+4)
-ax.plot(hidden_x, hidden_y, "o", color="white", markersize=MARKER_SIZE+4)
-ax.plot(output_x, output_y, "o", color="white", markersize=MARKER_SIZE+4)
+    w2 = model.layer_02.weight.detach().numpy()
+    w2 = ((w2-w2.min()) / (w2.max()-w2.min()))*3
 
-for i in range(len(hidden_x)):
-    ax.plot(hidden_x[i], hidden_y[i], "o", color=MARKER_COLOR, markersize=MARKER_SIZE, alpha=min(embeddings[i]+0.1, 1))
+    embeddings = model.embedd(torch.tensor(word, dtype=torch.float32)).detach().numpy()[0]
+    embeddings = (embeddings-min(embeddings))/(max(embeddings)-min(embeddings))
 
-for i in range(len(input_x)):
-    ax.plot(input_x[i], input_y[i], "o", color=MARKER_COLOR, markersize=MARKER_SIZE, alpha=min(1, word[0][i]+0.1))
+    fig, ax = plt.subplots()
+    ax.axis(False)
 
-for i in range(len(output_x)):
-    ax.plot(output_x[i], output_y[i], "o", color=MARKER_COLOR, markersize=MARKER_SIZE, alpha=min(1, predictions[i]+0.1))
+    for i in range(len(input_x)):
+        for j in range(len(hidden_x)):
+            ax.plot([input_x[i], hidden_x[j]], [input_y[i], hidden_y[j]], color=EDGE_COLOR, linewidth=w1[j,i])
 
-for i, training_text in enumerate(list(pp.encoder.categories_[0])[::-1]):
-    ax.text(x = 0.4, y=vocabulary_size-i, s=training_text)
+    for i in range(len(output_x)):
+        for j in range(len(hidden_x)):
+            ax.plot([output_x[i], hidden_x[j]], [output_y[i], hidden_y[j]], color=EDGE_COLOR, linewidth=w2[i,j])
 
-for i, training_text in enumerate(list(pp.encoder.categories_[0])[::-1]):
-    ax.text(x = 3.2, y=vocabulary_size-i, s=training_text)
+    ax.plot(input_x, input_y, "o", color="white", markersize=MARKER_SIZE+4)
+    ax.plot(hidden_x, hidden_y, "o", color="white", markersize=MARKER_SIZE+4)
+    ax.plot(output_x, output_y, "o", color="white", markersize=MARKER_SIZE+4)
 
-for i, value in enumerate(word[0]):
-    ax.text(x=0, y=i+1, s=value)
+    for i in range(len(hidden_x)):
+        ax.plot(hidden_x[i], hidden_y[i], "o", color=MARKER_COLOR, markersize=MARKER_SIZE, alpha=min(embeddings[i]+0.1, 1))
 
-for i, value in enumerate(predictions):
-    ax.text(x=4, y=i+1, s=round(value, 2))
+    for i in range(len(input_x)):
+        ax.plot(input_x[i], input_y[i], "o", color=MARKER_COLOR, markersize=MARKER_SIZE, alpha=min(1, word[0][i]+0.1))
 
-st.pyplot(fig)
+    for i in range(len(output_x)):
+        ax.plot(output_x[i], output_y[i], "o", color=MARKER_COLOR, markersize=MARKER_SIZE, alpha=min(1, predictions[i]+0.1))
+
+    for i, training_text in enumerate(list(pp.encoder.categories_[0])[::-1]):
+        ax.text(x = 0.4, y=vocabulary_size-i, s=training_text)
+
+    for i, training_text in enumerate(list(pp.encoder.categories_[0])[::-1]):
+        ax.text(x = 3.2, y=vocabulary_size-i, s=training_text)
+
+    for i, value in enumerate(word[0]):
+        ax.text(x=0, y=i+1, s=value)
+
+    for i, value in enumerate(predictions):
+        ax.text(x=4, y=i+1, s=round(value, 2))
+
+    st.pyplot(fig)
 
