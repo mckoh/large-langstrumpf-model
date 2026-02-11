@@ -94,7 +94,7 @@ with tab2:
     st.write(w1)
 
     st.subheader("Gewichte auf Ebene 2")
-    st.write(w2)
+    st.write(w2.T)
 
 with tab1:
     # Get Test Input
