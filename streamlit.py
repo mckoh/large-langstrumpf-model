@@ -35,11 +35,6 @@ training_text = st.sidebar.text_area(
     "Pipilotta Viktualia Pfefferminza Rollgardina Efraimstochter Langstrumpf"
 )
 
-if "text" not in st.session_state:
-    st.session_state["text"] = training_text
-else:
-    training_text = st.session_state["text"]
-
 pp = Preprocessor()
 pp.fit(training_text)
 X, y = pp.make_data(training_text)
@@ -67,6 +62,12 @@ else:
     model = st.session_state["model"]
     loss = st.session_state["loss"]
 
+if st.sidebar.button("Train Model"):
+    model = train()
+    st.session_state["model"] = model
+    loss = loss_history.train_losses
+    st.session_state["loss"] = loss
+
 # Loss Plot
 st.sidebar.header("Loss Plot")
 fig, ax = plt.subplots()
@@ -75,12 +76,6 @@ ax.set_xlabel("Iterationen")
 ax.set_ylabel("Loss")
 ax.set_title("Loss-Verlauf")
 st.sidebar.pyplot(fig)
-
-if st.sidebar.button("Train Model"):
-    model = train()
-    st.session_state["model"] = model
-    loss = loss_history.train_losses
-    st.session_state["loss"] = loss
 
 # Get Model weights after Training
 w1 = model.layer_01.weight.detach().numpy()
