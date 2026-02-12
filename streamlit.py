@@ -46,7 +46,7 @@ vocabulary_size = pp.vocabulary_size
 data = TensorDataset(torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32))
 loader = DataLoader(data, batch_size=vocabulary_size)
 loss_history = LossHistory()
-words_ = pp.encoder.categories_[0]
+
 
 # Model Loading
 def train():
@@ -187,6 +187,8 @@ with tab1:
     st.pyplot(fig)
 
 with tab3:
+
+    words_ = pp.encoder.categories_[0]
 
     fig, ax = plt.subplots(figsize=(15,8))
 
