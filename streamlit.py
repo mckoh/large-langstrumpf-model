@@ -1,4 +1,3 @@
-# %%
 import streamlit as st
 import torch
 import lightning as L
@@ -19,6 +18,7 @@ EDGE_WIDTH = 1
 HIDDEN_SIZE = 2
 N_LAYERS = 2
 
+
 st.set_page_config(
     page_title="Large Langstrumpf Model",
     page_icon="🤖",
@@ -29,6 +29,7 @@ st.set_page_config(
 st.sidebar.title("Large Langstrumpf Model")
 
 st.sidebar.header("Modell Einstellungen")
+
 # Data Loading and Preprocessing
 training_text = st.sidebar.text_area(
     "Trainingstext",
@@ -58,6 +59,7 @@ if 'model' not in st.session_state:
     st.session_state["model"] = model
     loss = loss_history.train_losses
     st.session_state["loss"] = loss
+
 else:
     model = st.session_state["model"]
     loss = st.session_state["loss"]
@@ -185,10 +187,11 @@ with tab3:
 
     fig, ax = plt.subplots(figsize=(15,8))
 
-    ax.scatter(x=w1[0,:], y=w1[1,:])
+    ax.scatter(x=w1[0,:], y=w1[1,:], color="k", label="word")
+    ax.legend(loc=0)
 
     for i, word in enumerate(pp.encoder.categories_[0]):
-        plt.text(x=w1[0,i], y=w1[1,i], s=word)
+        plt.text(x=w1[0,i]+0.1, y=w1[1,i]+0.1, s=word)
 
     ax.set_ylabel("weights to hidden 2")
     ax.set_xlabel("weights to hidden 1")
