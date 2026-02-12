@@ -187,7 +187,7 @@ with tab3:
 
     fig, ax = plt.subplots(figsize=(15,8))
 
-    ax.scatter(x=w1[0,:], y=w1[1,:], color="k", label="word", marker="o", s=10)
+    ax.scatter(x=w1[0,:], y=w1[1,:], color="k", label="word", marker="o", s=50)
     ax.legend(loc=0)
 
     for i, word in enumerate(pp.encoder.categories_[0]):
