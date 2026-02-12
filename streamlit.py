@@ -188,7 +188,7 @@ with tab1:
 
 with tab3:
 
-    fig, ax = plt.subplots(figsize=(15,5))
+    fig, ax = plt.subplots(figsize=(15,8))
 
     ax.scatter(x=w1[0,:], y=w1[1,:])
 
