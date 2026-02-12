@@ -10,4 +10,4 @@ numpy
 lightning
 scikit-learn
 streamlit==1.54.0
-
+seaborn
