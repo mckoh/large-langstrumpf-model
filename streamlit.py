@@ -46,6 +46,7 @@ vocabulary_size = pp.vocabulary_size
 data = TensorDataset(torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32))
 loader = DataLoader(data, batch_size=vocabulary_size)
 loss_history = LossHistory()
+words_ = pp.encoder.categories_[0]
 
 # Model Loading
 def train():
@@ -194,7 +195,7 @@ with tab3:
     ax.spines['right'].set_visible(False)
     ax.legend(loc=0)
 
-    for i, word in enumerate(pp.encoder.categories_[0]):
+    for i, word in enumerate(words_):
         plt.text(x=w1[0,i]+0.02, y=w1[1,i]+0.02, s=word)
 
     ax.set_ylabel("weights to hidden 2")
