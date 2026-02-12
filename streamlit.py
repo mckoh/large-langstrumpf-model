@@ -193,7 +193,9 @@ with tab3:
     ax.scatter(x=w1[0,:], y=w1[1,:])
     for i, word in enumerate(pp.encoder.categories_[0]):
         plt.text(x=w1[0,i], y=w1[1,i], s=word)
-
+    ax.set_ylabel("weights to hidden 2")
+    ax.set_xlabel("weights to hidden 1")
+    ax.set_title("Visualization of Embeddings")
     st.pyplot(fig)
 
 st.sidebar.markdown(
