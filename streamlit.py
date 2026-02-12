@@ -190,9 +190,9 @@ with tab3:
 
     fig, ax = plt.subplots()
 
-    ax.scatter(x=w1[:,0], y=w1[:,1])
+    ax.scatter(x=w1[0,:], y=w1[1,:])
     for i, word in enumerate(pp.encoder.categories_[0]):
-        plt.text(x=w1[i,0], y=w1[i,1], s=word)
+        plt.text(x=w1[0,i], y=w1[1,i], s=word)
 
 st.sidebar.markdown(
     "<div style='text-align:center; color:#999; margin-top:60px;'>"
