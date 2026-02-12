@@ -95,7 +95,7 @@ with tab2:
 
     st.subheader("Gewichte auf Ebene 1")
     df1 = DataFrame(w1)
-    print(pp.encoder.categories_)
+    st.write(pp.encoder.categories_)
     df1.columns = pp.encoder.categories_
     df1.index = ["Weights to H1", "Weights to H2"]
     st.write(df1)
