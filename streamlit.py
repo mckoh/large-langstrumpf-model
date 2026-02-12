@@ -191,7 +191,7 @@ with tab3:
     ax.legend(loc=0)
 
     for i, word in enumerate(pp.encoder.categories_[0]):
-        plt.text(x=w1[0,i]+0.01, y=w1[1,i]+0.01, s=word)
+        plt.text(x=w1[0,i]+0.05, y=w1[1,i]+0.05, s=word)
 
     ax.set_ylabel("weights to hidden 2")
     ax.set_xlabel("weights to hidden 1")
