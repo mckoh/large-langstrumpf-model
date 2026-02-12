@@ -194,6 +194,8 @@ with tab3:
     for i, word in enumerate(pp.encoder.categories_[0]):
         plt.text(x=w1[0,i], y=w1[1,i], s=word)
 
+    st.pyplot(fig)
+
 st.sidebar.markdown(
     "<div style='text-align:center; color:#999; margin-top:60px;'>"
     "Made with ❤️ by </BR> Michael Kohlegger (2026)"
