@@ -77,6 +77,8 @@ ax.plot(loss, label="Train Loss")
 ax.set_xlabel("Iterationen")
 ax.set_ylabel("Loss")
 ax.set_title("Loss-Verlauf")
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
 st.sidebar.pyplot(fig)
 
 # Get Model weights after Training
@@ -188,6 +190,8 @@ with tab3:
     fig, ax = plt.subplots(figsize=(15,8))
 
     ax.scatter(x=w1[0,:], y=w1[1,:], color="k", label="word", marker="o", s=50)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     ax.legend(loc=0)
 
     for i, word in enumerate(pp.encoder.categories_[0]):
