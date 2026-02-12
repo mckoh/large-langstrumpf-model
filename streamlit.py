@@ -9,6 +9,7 @@ from word_splitter import Preprocessor
 from word_embedder import WordEmbedder
 from matplotlib import pyplot as plt
 from loss_logger import LossHistory
+from pandas import DataFrame
 
 
 MARKER_SIZE = 24
@@ -93,10 +94,16 @@ with tab2:
     st.header(f"Insgesamt hat unser Modell {vocabulary_size * HIDDEN_SIZE * N_LAYERS} Gewichte")
 
     st.subheader("Gewichte auf Ebene 1")
-    st.write(w1)
+    df1 = DataFrame(w1)
+    df1.columns = pp.encoder.categories_
+    df1.index = ["Weights to H1", "Weights to H2"]
+    st.write(df1)
 
     st.subheader("Gewichte auf Ebene 2")
-    st.write(w2.T)
+    df2 = DataFrame(w2.T)
+    df2.columns = pp.encoder.categories_
+    df2.index = ["Weights from H1", "Weights from H2"]
+    st.write(df2)
 
 with tab1:
     # Get Test Input
