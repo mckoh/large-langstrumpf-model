@@ -87,7 +87,7 @@ w1 = model.layer_01.weight.detach().numpy()
 w2 = model.layer_02.weight.detach().numpy()
 
 # Page Content
-tab1, tab2 = st.tabs(["📈 Model Test", "🗃 Gewichte"])
+tab1, tab2, tab3 = st.tabs(["📈 Model Test", "🗃 Gewichte", "📈 Embeddings"])
 
 with tab2:
 
@@ -186,6 +186,13 @@ with tab1:
 
     st.pyplot(fig)
 
+with tab3:
+
+    fig, ax = plt.subplots()
+
+    ax.scatter(x=w1[:,0], y=w1[:,1])
+    for i, word in enumerate(pp.encoder.categories_[0]):
+        plt.text(x=w1[i,0], y=w1[i,1], s=word)
 
 st.sidebar.markdown(
     "<div style='text-align:center; color:#999; margin-top:60px;'>"
