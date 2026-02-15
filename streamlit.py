@@ -67,13 +67,11 @@ epochs = st.sidebar.slider("Anzahl Epochen", 0, 100, 50)
 if "pp" not in st.session_state:
     preprocess(training_text)
 
-# Model Loading
 if 'model' not in st.session_state:
     train(epochs)
 
-
 if st.sidebar.button("Train Model"):
-    preprocess()
+    preprocess(training_text)
     train(epochs)
 
 # Loss Plot
