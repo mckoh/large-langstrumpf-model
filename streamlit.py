@@ -173,10 +173,10 @@ with tab1:
     for i in range(len(output_x)):
         ax.plot(output_x[i], output_y[i], "o", color=MARKER_COLOR, markersize=MARKER_SIZE, alpha=min(1, predictions[i]+0.1))
 
-    for i, training_text in enumerate(list(pp.encoder.categories_[0])[::-1]):
+    for i, training_text in enumerate(list(st.session_state["words"])[::-1]):
         ax.text(x = 0.4, y=st.session_state["vocabulary_size"]-i, s=training_text)
 
-    for i, training_text in enumerate(list(pp.encoder.categories_[0])[::-1]):
+    for i, training_text in enumerate(list(st.session_state["words"])[::-1]):
         ax.text(x = 3.2, y=st.session_state["vocabulary_size"]-i, s=training_text)
 
     for i, value in enumerate(word[0]):
