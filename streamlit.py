@@ -19,7 +19,13 @@ HIDDEN_SIZE = 2
 N_LAYERS = 2
 
 
-def train(loader, epochs):
+def train(epochs):
+    data = TensorDataset(
+        torch.tensor(st.session_state["X"], dtype=torch.float32),
+        torch.tensor(st.session_state["y"], dtype=torch.float32)
+    )
+    loader = DataLoader(data, batch_size=st.session_state["vocabulary_size"])
+    loss_history = LossHistory()
     model = WordEmbedder(vocabulary_size=st.session_state["vocabulary_size"])
     trainer = L.Trainer(max_epochs=epochs, callbacks=[loss_history])
     trainer.fit(model, train_dataloaders=loader)
@@ -57,14 +63,6 @@ training_text = st.sidebar.text_area(
 )
 
 epochs = st.sidebar.slider("Anzahl Epochen", 0, 100, 50)
-
-data = TensorDataset(
-    torch.tensor(st.session_state["X"], dtype=torch.float32),
-    torch.tensor(st.session_state["y"], dtype=torch.float32)
-)
-loader = DataLoader(data, batch_size=st.session_state["vocabulary_size"])
-loss_history = LossHistory()
-
 
 if "pp" not in st.session_state:
     preprocess()
