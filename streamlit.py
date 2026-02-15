@@ -36,7 +36,7 @@ def train(epochs):
     st.session_state["loss"] = loss
 
 
-def preprocess(text):
+def preprocess(training_text):
     pp = Preprocessor()
     pp.fit(training_text)
     st.session_state["pp"] = pp
@@ -65,16 +65,16 @@ training_text = st.sidebar.text_area(
 epochs = st.sidebar.slider("Anzahl Epochen", 0, 100, 50)
 
 if "pp" not in st.session_state:
-    preprocess()
+    preprocess(training_text)
 
 # Model Loading
 if 'model' not in st.session_state:
-    train(loader, epochs)
+    train(epochs)
 
 
 if st.sidebar.button("Train Model"):
     preprocess()
-    train(loader, epochs)
+    train(epochs)
 
 # Loss Plot
 st.sidebar.header("Loss Plot")
