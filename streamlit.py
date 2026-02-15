@@ -19,6 +19,26 @@ HIDDEN_SIZE = 2
 N_LAYERS = 2
 
 
+def train(loader, epochs):
+    model = WordEmbedder(vocabulary_size=st.session_state["vocabulary_size"])
+    trainer = L.Trainer(max_epochs=epochs, callbacks=[loss_history])
+    trainer.fit(model, train_dataloaders=loader)
+    loss = loss_history.train_losses
+    st.session_state["w1"] = model.layer_01.weight.detach().numpy()
+    st.session_state["w2"] = model.layer_02.weight.detach().numpy()
+    st.session_state["model"] = model
+    st.session_state["loss"] = loss
+
+
+def preprocess(text):
+    pp = Preprocessor()
+    pp.fit(training_text)
+    st.session_state["pp"] = pp
+    st.session_state["X"], st.session_state["y"] = pp.make_data(training_text)
+    st.session_state["vocabulary_size"] = pp.vocabulary_size
+    st.session_state["words"] = pp.encoder.categories_[0]
+
+
 st.set_page_config(
     page_title="Large Langstrumpf Model",
     page_icon="🤖",
@@ -27,7 +47,6 @@ st.set_page_config(
 )
 
 st.sidebar.title("Large Langstrumpf Model")
-
 st.sidebar.header("Modell Einstellungen")
 
 # Data Loading and Preprocessing
@@ -37,45 +56,32 @@ training_text = st.sidebar.text_area(
     key="input_text"
 )
 
-pp = Preprocessor()
-pp.fit(training_text)
-X, y = pp.make_data(training_text)
-
 epochs = st.sidebar.slider("Anzahl Epochen", 0, 100, 50)
 
-vocabulary_size = pp.vocabulary_size
-data = TensorDataset(torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32))
-loader = DataLoader(data, batch_size=vocabulary_size)
+data = TensorDataset(
+    torch.tensor(st.session_state["X"], dtype=torch.float32),
+    torch.tensor(st.session_state["y"], dtype=torch.float32)
+)
+loader = DataLoader(data, batch_size=st.session_state["vocabulary_size"])
 loss_history = LossHistory()
 
 
+if "pp" not in st.session_state:
+    preprocess()
+
 # Model Loading
-def train():
-    model = WordEmbedder(vocabulary_size=vocabulary_size)
-    trainer = L.Trainer(max_epochs=epochs, callbacks=[loss_history])
-    trainer.fit(model, train_dataloaders=loader)
-    return model
-
 if 'model' not in st.session_state:
-    model = train()
-    st.session_state["model"] = model
-    loss = loss_history.train_losses
-    st.session_state["loss"] = loss
+    train(loader, epochs)
 
-else:
-    model = st.session_state["model"]
-    loss = st.session_state["loss"]
 
 if st.sidebar.button("Train Model"):
-    model = train()
-    st.session_state["model"] = model
-    loss = loss_history.train_losses
-    st.session_state["loss"] = loss
+    preprocess()
+    train(loader, epochs)
 
 # Loss Plot
 st.sidebar.header("Loss Plot")
 fig, ax = plt.subplots()
-ax.plot(loss, label="Train Loss")
+ax.plot(st.session_state["loss"], label="Train Loss")
 ax.set_xlabel("Iterationen")
 ax.set_ylabel("Loss")
 ax.set_title("Loss-Verlauf")
@@ -83,26 +89,22 @@ ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 st.sidebar.pyplot(fig)
 
-# Get Model weights after Training
-w1 = model.layer_01.weight.detach().numpy()
-w2 = model.layer_02.weight.detach().numpy()
-
 # Page Content
 tab1, tab2, tab3 = st.tabs(["📈 Model Test", "🗃 Gewichte", "📈 Embeddings"])
 
 with tab2:
 
-    st.header(f"Insgesamt hat unser Modell {vocabulary_size * HIDDEN_SIZE * N_LAYERS} Gewichte")
+    st.header(f"Insgesamt hat unser Modell {st.session_state["vocabulary_size"] * HIDDEN_SIZE * N_LAYERS} Gewichte")
 
     st.subheader("Gewichte auf Ebene 1")
-    df1 = DataFrame(w1)
-    df1.columns = pp.encoder.categories_[0]
+    df1 = DataFrame(st.session_state["w1"])
+    df1.columns = st.session_state["words"]
     df1.index = ["Weights to H1", "Weights to H2"]
     st.write(df1)
 
     st.subheader("Gewichte auf Ebene 2")
-    df2 = DataFrame(w2.T)
-    df2.columns = pp.encoder.categories_[0]
+    df2 = DataFrame(st.session_state["w2"].T)
+    df2.columns = st.session_state["words"]
     df2.index = ["Weights from H1", "Weights from H2"]
     st.write(df2)
 
@@ -110,28 +112,28 @@ with tab1:
     # Get Test Input
     st.header("Modell Testen")
     word = st.selectbox("Welches Wort wollen wir durch das Modell schicken?", training_text.split())
-    word = pp.transform(word)
+    word = st.session_state["pp"].transform(word)
 
     # Create Grid for visualization
-    input_x = [1]*vocabulary_size
-    input_y = list(range(1, vocabulary_size+1))
+    input_x = [1]*st.session_state["vocabulary_size"]
+    input_y = list(range(1, st.session_state["vocabulary_size"]+1))
     hidden_x = [2, 2]
-    hidden_y = [vocabulary_size / HIDDEN_SIZE, vocabulary_size / HIDDEN_SIZE + 1]
-    output_x = [3]*vocabulary_size
-    output_y = range(1, vocabulary_size+1)
+    hidden_y = [st.session_state["vocabulary_size"] / HIDDEN_SIZE, st.session_state["vocabulary_size"] / HIDDEN_SIZE + 1]
+    output_x = [3]*st.session_state["vocabulary_size"]
+    output_y = range(1, st.session_state["vocabulary_size"]+1)
 
     # Scale the Weights for plotting from 0 to 1
     # Multiply by 3 to get appropriate line thickness in plot
-    w1 = ((w1-w1.min()) / (w1.max()-w1.min())) * 3
-    w2 = ((w2-w2.min()) / (w2.max()-w2.min())) * 3
+    w1 = ((st.session_state["w1"] - st.session_state["w1"].min()) / (st.session_state["w1"].max() - st.session_state["w1"].min())) * 3
+    w2 = ((st.session_state["w2"] - st.session_state["w2"].min()) / (st.session_state["w2"].max() - st.session_state["w2"].min())) * 3
 
     # Get Predictions for visualization (softmax will already scale them
     # from 0 to 1)
-    predictions = list(model.predict(torch.tensor(word, dtype=torch.float32)).detach().numpy())[0]
+    predictions = list(st.session_state["model"].predict(torch.tensor(word, dtype=torch.float32)).detach().numpy())[0]
 
     # Determine the activation of the hidden layer
     # Scale the activation from 0 to 1 for plotting
-    activation = model.embedd(torch.tensor(word, dtype=torch.float32)).detach().numpy()[0]
+    activation = st.session_state["model"].embedd(torch.tensor(word, dtype=torch.float32)).detach().numpy()[0]
     activation = (activation-min(activation))/(max(activation)-min(activation))
 
     # Start the plot
@@ -174,10 +176,10 @@ with tab1:
         ax.plot(output_x[i], output_y[i], "o", color=MARKER_COLOR, markersize=MARKER_SIZE, alpha=min(1, predictions[i]+0.1))
 
     for i, training_text in enumerate(list(pp.encoder.categories_[0])[::-1]):
-        ax.text(x = 0.4, y=vocabulary_size-i, s=training_text)
+        ax.text(x = 0.4, y=st.session_state["vocabulary_size"]-i, s=training_text)
 
     for i, training_text in enumerate(list(pp.encoder.categories_[0])[::-1]):
-        ax.text(x = 3.2, y=vocabulary_size-i, s=training_text)
+        ax.text(x = 3.2, y=st.session_state["vocabulary_size"]-i, s=training_text)
 
     for i, value in enumerate(word[0]):
         ax.text(x=0, y=i+1, s=value)
@@ -189,7 +191,7 @@ with tab1:
 
 with tab3:
 
-    words_ = pp.encoder.categories_[0]
+
 
     fig, ax = plt.subplots(figsize=(15,8))
 
@@ -198,7 +200,7 @@ with tab3:
     ax.spines['right'].set_visible(False)
     ax.legend(loc=0)
 
-    for i, word in enumerate(words_):
+    for i, word in enumerate(st.session_state["words"]):
         plt.text(x=w1[0,i]+0.02, y=w1[1,i]+0.02, s=word)
 
     ax.set_ylabel("weights to hidden 2")
