@@ -9,6 +9,7 @@ from word_embedder import WordEmbedder
 from matplotlib import pyplot as plt
 from loss_logger import LossHistory
 from pandas import DataFrame
+from string import punctuation
 
 
 MARKER_SIZE = 24
@@ -43,6 +44,14 @@ def preprocess(training_text):
     st.session_state["X"], st.session_state["y"] = pp.make_data(training_text)
     st.session_state["vocabulary_size"] = pp.vocabulary_size
     st.session_state["words"] = pp.encoder.categories_[0]
+
+
+def clean(text):
+    output_text = ""
+    for char in text:
+        if char not in punctuation:
+            output_text += char
+    return output_text
 
 
 st.set_page_config(
@@ -107,7 +116,7 @@ with tab2:
 with tab1:
     # Get Test Input
     st.header("Modell Testen")
-    word = st.selectbox("Welches Wort wollen wir durch das Modell schicken?", training_text.split())
+    word = st.selectbox("Welches Wort wollen wir durch das Modell schicken?", clean(training_text).split())
     word = st.session_state["pp"].transform(word)
 
     # Create Grid for visualization
