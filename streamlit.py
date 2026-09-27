@@ -2,11 +2,9 @@ import streamlit as st
 import torch
 import lightning as L
 import matplotlib.pyplot as plt
-import lightning as L
 from torch.utils.data import TensorDataset, DataLoader
 from word_splitter import Preprocessor
 from word_embedder import WordEmbedder
-from matplotlib import pyplot as plt
 from loss_logger import LossHistory
 from pandas import DataFrame
 from string import punctuation
@@ -73,6 +71,9 @@ training_text = st.sidebar.text_area(
 
 epochs = st.sidebar.slider("Anzahl Epochen", 0, 100, 50)
 
+# Temperature Slider (0.1 bis 3.0 in 0.1er Schritten)
+temp = st.sidebar.slider("Temperatur", min_value=0.1, max_value=3.0, value=1.0, step=0.1)
+
 if "pp" not in st.session_state:
     preprocess(training_text)
 
@@ -99,7 +100,7 @@ tab1, tab2, tab3 = st.tabs(["📈 Model Test", "🗃 Gewichte", "📈 Embeddings
 
 with tab2:
 
-    st.header(f"Insgesamt hat unser Modell {st.session_state["vocabulary_size"] * HIDDEN_SIZE * N_LAYERS} Gewichte")
+    st.header(f"Insgesamt hat unser Modell {st.session_state['vocabulary_size'] * HIDDEN_SIZE * N_LAYERS} Gewichte")
 
     st.subheader("Gewichte auf Ebene 1")
     df1 = DataFrame(st.session_state["w1"])
@@ -132,13 +133,25 @@ with tab1:
     w1 = ((st.session_state["w1"] - st.session_state["w1"].min()) / (st.session_state["w1"].max() - st.session_state["w1"].min())) * 3
     w2 = ((st.session_state["w2"] - st.session_state["w2"].min()) / (st.session_state["w2"].max() - st.session_state["w2"].min())) * 3
 
-    # Get Predictions for visualization (softmax will already scale them
-    # from 0 to 1)
-    predictions = list(st.session_state["model"].predict(torch.tensor(word, dtype=torch.float32)).detach().numpy())[0]
+    # Calculate predictions with temperature scaling
+    word_tensor = torch.tensor(word, dtype=torch.float32)
+    with torch.no_grad():
+        # Get raw logits (either via forward or directly from layers)
+        if hasattr(st.session_state["model"], "forward"):
+            logits = st.session_state["model"](word_tensor)
+        else:
+            # Fallback calculating manually if predict() applies Softmax internally
+            emb = st.session_state["model"].embedd(word_tensor)
+            logits = torch.matmul(emb, torch.tensor(st.session_state["w2"]))
+
+        # Apply Softmax with Temperature
+        scaled_logits = logits / temp
+        probs = torch.softmax(scaled_logits, dim=-1)
+        predictions = list(probs.detach().numpy())[0]
 
     # Determine the activation of the hidden layer
     # Scale the activation from 0 to 1 for plotting
-    activation = st.session_state["model"].embedd(torch.tensor(word, dtype=torch.float32)).detach().numpy()[0]
+    activation = st.session_state["model"].embedd(word_tensor).detach().numpy()[0]
     activation = (activation-min(activation))/(max(activation)-min(activation))
 
     # Start the plot
@@ -180,11 +193,11 @@ with tab1:
     for i in range(len(output_x)):
         ax.plot(output_x[i], output_y[i], "o", color=MARKER_COLOR, markersize=MARKER_SIZE, alpha=min(1, predictions[i]+0.1))
 
-    for i, training_text in enumerate(list(st.session_state["words"])[::-1]):
-        ax.text(x = 0.4, y=st.session_state["vocabulary_size"]-i, s=training_text)
+    for i, t_text in enumerate(list(st.session_state["words"])[::-1]):
+        ax.text(x=0.4, y=st.session_state["vocabulary_size"]-i, s=t_text)
 
-    for i, training_text in enumerate(list(st.session_state["words"])[::-1]):
-        ax.text(x = 3.2, y=st.session_state["vocabulary_size"]-i, s=training_text)
+    for i, t_text in enumerate(list(st.session_state["words"])[::-1]):
+        ax.text(x=3.2, y=st.session_state["vocabulary_size"]-i, s=t_text)
 
     for i, value in enumerate(word[0]):
         ax.text(x=0, y=i+1, s=value)
@@ -196,8 +209,6 @@ with tab1:
 
 with tab3:
 
-
-
     fig, ax = plt.subplots(figsize=(15,8))
 
     ax.scatter(x=w1[0,:], y=w1[1,:], color="k", label="word", marker="o", s=50)
@@ -205,8 +216,8 @@ with tab3:
     ax.spines['right'].set_visible(False)
     ax.legend(loc=0)
 
-    for i, word in enumerate(st.session_state["words"]):
-        plt.text(x=w1[0,i]+0.02, y=w1[1,i]+0.02, s=word)
+    for i, w_text in enumerate(st.session_state["words"]):
+        plt.text(x=w1[0,i]+0.02, y=w1[1,i]+0.02, s=w_text)
 
     ax.set_ylabel("weights to hidden 2")
     ax.set_xlabel("weights to hidden 1")
@@ -215,7 +226,7 @@ with tab3:
 
 st.sidebar.markdown(
     "<div style='text-align:center; color:#999; margin-top:60px;'>"
-    "Made with ❤️ by </BR> Michael Kohlegger (2026)"
+    "Made with ❤️ by <br> Michael Kohlegger (2026)"
     "</div>",
     unsafe_allow_html=True
 )
