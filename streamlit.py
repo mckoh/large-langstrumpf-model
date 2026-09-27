@@ -65,7 +65,7 @@ st.sidebar.header("Modell Einstellungen")
 # Data Loading and Preprocessing
 training_text = st.sidebar.text_area(
     "Trainingstext",
-    "Pipilotta Viktualia Pfefferminza Rollgardina Efraimstochter Langstrumpf",
+    "Pipilotta Viktualia Pfefferminza Rollgardina Efraimstochter Langstrumpf EOF",
     key="input_text"
 )
 
@@ -147,6 +147,7 @@ with tab1:
         # Apply Softmax with Temperature
         scaled_logits = logits / temp
         probs = torch.softmax(scaled_logits, dim=-1)
+        originals = list(logits.detach().numpy())[0]
         predictions = list(probs.detach().numpy())[0]
 
     # Determine the activation of the hidden layer
@@ -203,7 +204,14 @@ with tab1:
         ax.text(x=0, y=i+1, s=value)
 
     for i, value in enumerate(predictions):
+        ax.text(x=4.5, y=i+1, s=round(value, 2))
+
+    for i, value in enumerate(originals):
         ax.text(x=4, y=i+1, s=round(value, 2))
+
+    ax.text(x=4, y=i+2, s="logit", weight='bold')
+    ax.text(x=4.5, y=i+2, s="probability", weight='bold')
+    ax.text(x=0, y=i+2, s="input", weight='bold')
 
     st.pyplot(fig)
 
