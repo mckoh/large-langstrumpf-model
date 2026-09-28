@@ -65,7 +65,7 @@ st.sidebar.header("Modell Einstellungen")
 # Data Loading and Preprocessing
 training_text = st.sidebar.text_area(
     "Trainingstext",
-    "Pipilotta Viktualia Pfefferminza Rollgardina Efraimstochter Langstrumpf EOF",
+    "Pipilotta Viktualia Pfefferminza Rollgardina Efraimstochter Langstrumpf EOS",
     key="input_text"
 )
 
