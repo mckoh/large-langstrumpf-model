@@ -94,7 +94,7 @@ ax.spines['right'].set_visible(False)
 st.sidebar.pyplot(fig)
 
 # Page Content
-tab1, tab2, tab3 = st.tabs(["📈 Model Test", "🗃 Gewichte", "📈 Embeddings"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📈 Model Test", "🗃 Gewichte", "📈 Embeddings", "ℹ️ Erklärung", "🔬 Experimentideen"])
 
 with tab2:
 
@@ -229,6 +229,66 @@ with tab3:
     ax.set_xlabel("weights to hidden 1")
     ax.set_title("Visualization of Embeddings")
     st.pyplot(fig)
+
+with tab4:
+    st.markdown("""# 🤖 Kurzanleitung: Large Langstrumpf Model (LLM)
+
+Der Demonstrator veranschaulicht interaktiv, wie ein einfaches Neurologisches Netz Wort-Embeddings lernt und Vorhersagen für den nächsten Token (das nächste Wort) trifft.
+
+## 1. Modell konfigurieren & trainieren (Seitenleiste)
+
+1. **Trainingstext eingeben:** Passe den Text im Feld *Trainingstext* an oder nutze den Standardsatz (z. B. den Namen von Pippi Langstrumpf).
+2. **Epochen wählen:** Lege über den Schieberegler *Anzahl Epochen* fest, wie intensiv das Modell auf den Text trainiert wird.
+3. **Temperatur einstellen:** Steuere über *Temperatur*, wie „spitz“ oder „flach“ die Wahrscheinlichkeitsverteilung bei der Vorhersage ausfällt (niedrige Werte verdeutlichen die Top-Vorhersage, höhere Werte verteilen die Wahrscheinlichkeiten gleichmäßiger).
+4. **Modell neu starten:** Klicke auf **Train Model**, um das Wortinventar neu zu verarbeiten und das Netzwerk frisch zu trainieren.
+5. **Loss-Verlauf beobachten:** Das Diagramm *Loss-Verlauf* zeigt direkt, wie schnell der Trainingsfehler mit den Iterationen sinkt.
+
+## 2. Die Hauptansichten (Tabs)
+
+### 📈 Model Test
+
+* **Worteingabe:** Wähle über das Dropdown-Menü ein Wort aus dem Trainingstext aus.
+* **Architektur-Visualisierung:**
+* **Input Layer (links):** Zeigt den One-Hot-Vektor des gewählten Eingabeworts.
+* **Hidden Layer (Mitte):** Stellt die zwei versteckten Neuronen dar; die Stärke der Aktivierung wird durch die Helligkeit der Knoten symbolisiert.
+* **Verbindungen (Kanten):** Die Liniendicke entspricht den trainierten Gewichtungen.
+* **Output Layer (rechts):** Zeigt die Rohwerte (**Logits**) sowie die durch die *Softmax-Funktion* (inkl. Temperatur) berechneten **Wahrscheinlichkeiten** für das nächste Wort.
+
+### 🗃 Gewichte
+
+* Zeigt die genauen Matrizen der gelernten Gewichte von Ebene 1 ($W_1$) und Ebene 2 ($W_2$).
+* Gibt Aufschluss darüber, wie die Wörter im 2D-Hidden-Space gewichtet und transformiert werden.
+
+### 📈 Embeddings
+
+* Visualisiert die gelernten 2D-Worteinbettungen in einem Koordinatensystem.
+* Wörter, die im Text in ähnlichen Kontexten stehen oder ähnliche Übergänge haben, rücken in dieser 2D-Projektion näher zusammen.""")
+
+with tab5:
+    st.markdown("""# 🧪 Experimente & Aufgaben für Nutzer
+
+## Experiment 1: Der Einfluss der Epochen (Unterfitting vs. Konvergenz)
+
+* **Aktion:** Setze die *Anzahl Epochen* zuerst auf **0** oder **5** und klicke auf **Train Model**. Beobachte das Verhalten im Tab **📈 Model Test** und **📈 Embeddings**. Erhöhe danach schrittweise auf **50** oder **100** Epochen.
+* **Was man lernt:** Bei wenigen Epochen sind die Gewichte noch zufällig verteilt – das Modell „weiß“ noch nicht, welches Wort auf welches folgt, und der Loss ist hoch. Mit mehr Epochen sinkt der Loss, die Kanten im Netzwerk werden gezielt dicker/dünner und die Wort-Embeddings ordnen sich im 2D-Raum an.
+
+## Experiment 2: Die Magie der Temperatur (Softmax-Scaling)
+
+* **Aktion:** Wähle im Tab **📈 Model Test** ein Wort aus (z. B. *„Pfefferminza“*). Verändere nun den Schieberegler **Temperatur** von **0.1** schrittweise bis auf **8.0**, ohne das Modell neu zu trainieren.
+* **Was man lernt:** Bei **niedriger Temperatur (0.1)** wird der Unterschied zwischen den Logits extrem verstärkt (*„Winner-takes-all“*): Die Wahrscheinlichkeit für das nachfolgende Wort geht nahezu auf 1.0 (100 %). Bei **hoher Temperatur (8.0)** werden die Logits geglättet: Das Modell wird „unsicherer“ und verteilt die Wahrscheinlichkeiten fast gleichmäßig über das gesamte Vokabular.
+
+## Experiment 3: Wort-Verbindungen im 2D-Raum (Embeddings erforschen)
+
+* **Aktion:** Trainiere das Modell mit dem Standardtext. Wechsel in den Tab **📈 Embeddings** und schaue dir die Positionen der Wörter an.
+* **Was man lernt:** Das Modell nutzt genau **2 versteckte Neuronen** (`HIDDEN_SIZE = 2`), um das gesamte Vokabular in eine 2D-Ebene zu projizieren. Nutzer können direkt sehen, welche Wörter im Vektorraum nah beieinander liegen und wie die Eingabe über die Matrix $W_1$ auf die x- und y-Achse transformiert wird.
+
+## Experiment 4: Eigene Sätze & Sequenzen testen
+
+* **Aktion:** Ersetze den Trainingstext durch eigene, wiederkehrende Muster oder Reime, wie z. B.:
+* `eins zwei drei eins zwei drei EOS`
+* `ich liebe data science und ich liebe machine learning EOS`
+Klicke auf **Train Model** und teste im Tab **📈 Model Test**, wie gut das Modell logische Nachfolger vorhersagt (z. B. was folgt auf *„eins“* oder *„liebe“*?).
+* **Was man lernt:** Wie das Vokabular dynamsich neu erstellt wird und wie Mehrfachvorkommen von Wörtern die Vorhersagewahrscheinlichkeiten im Modell verändern.""")
 
 st.sidebar.markdown(
     "<div style='text-align:center; color:#999; margin-top:60px;'>"
