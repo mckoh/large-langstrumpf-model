@@ -231,7 +231,7 @@ with tab3:
     st.pyplot(fig)
 
 with tab4:
-    st.markdown("""# 🤖 Kurzanleitung: Large Langstrumpf Model (LLM)
+    st.markdown("""# Kurzanleitung: Large Langstrumpf Model (LLM)
 
 Der Demonstrator veranschaulicht interaktiv, wie ein einfaches Neurologisches Netz Wort-Embeddings lernt und Vorhersagen für den nächsten Token (das nächste Wort) trifft.
 
@@ -265,7 +265,7 @@ Der Demonstrator veranschaulicht interaktiv, wie ein einfaches Neurologisches Ne
 * Wörter, die im Text in ähnlichen Kontexten stehen oder ähnliche Übergänge haben, rücken in dieser 2D-Projektion näher zusammen.""")
 
 with tab5:
-    st.markdown("""# 🧪 Experimente & Aufgaben für Nutzer
+    st.markdown("""# Experimente & Aufgaben für Nutzer
 
 ## Experiment 1: Der Einfluss der Epochen (Unterfitting vs. Konvergenz)
 
