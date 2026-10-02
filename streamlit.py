@@ -81,7 +81,7 @@ if 'model' not in st.session_state:
 # Top-K Slider erst einbinden, wenn vocabulary_size garantiert existiert
 vocab_size = st.session_state["vocabulary_size"]
 top_k = st.sidebar.slider(
-    "Top-K Sampling",
+    "top_k",
     min_value=1,
     max_value=vocab_size,
     value=min(3, vocab_size),
