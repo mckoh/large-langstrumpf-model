@@ -242,8 +242,8 @@ with tab1:
 
     # Probabilities beschriften: Top-K Kandidaten werden fett gedruckt
     for i, value in enumerate(predictions):
-        is_bold = "bold" if i in topk_indices_list else "normal"
-        ax.text(x=prop_x, y=i+1, s=f"{value:.2f}", weight=is_bold, verticalalignment='center')
+        styling = "bold" if i in topk_indices_list else "normal"
+        ax.text(x=prop_x, y=i+1, s=f"{value:.2f}", weight=styling, verticalalignment='center')
 
     # Logits beschriften
     for i, value in enumerate(originals):
@@ -254,13 +254,11 @@ with tab1:
 
     # Header-Beschriftungen über den Spalten
     max_y = st.session_state["vocabulary_size"]
-    ax.text(x=0, y=max_y+1, s="Input", weight='bold')
     ax.text(x=logit_x, y=max_y+1, s="Logit", weight='bold')
     ax.text(x=prop_x, y=max_y+1, s="Prob", weight='bold')
-    ax.text(x=sampled_node_x, y=max_y+1, s="Ausgewählt", weight='bold', color="orange")
 
-    col1, col2, col3 = st.columns([1,8,1])
-    with col2:
+    _, img_col, _ = st.columns([1,8,1])
+    with img_col:
         st.pyplot(fig)
 
 with tab3:
