@@ -60,7 +60,6 @@ st.set_page_config(
 )
 
 st.sidebar.title("Large Langstrumpf Model")
-st.sidebar.header("Modell Einstellungen")
 
 # Data Loading and Preprocessing
 training_text = st.sidebar.text_area(
@@ -88,18 +87,15 @@ top_k = st.sidebar.slider(
     step=1
 )
 
-s_col_1, s_col_2 = st.sidebar.columns(2)
-with s_col_1:
-    if st.sidebar.button("Retrain"):
-        preprocess(training_text)
-        train(epochs)
-        st.rerun()  # Aktualisiert die App sauber nach dem Neu-Trainieren
-with s_col_2:
-    if st.sidebar.button("Resample"):
-        st.rerun()
+if st.sidebar.button("🎲 Resample"):
+    st.rerun()
+
+if st.sidebar.button("🌀 Retrain"):
+    preprocess(training_text)
+    train(epochs)
+    st.rerun()  # Aktualisiert die App sauber nach dem Neu-Trainieren
 
 # Loss Plot
-st.sidebar.header("Loss Plot")
 fig, ax = plt.subplots()
 ax.plot(st.session_state["loss"], label="Train Loss")
 ax.set_xlabel("Iterationen")
