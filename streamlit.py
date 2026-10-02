@@ -88,14 +88,15 @@ top_k = st.sidebar.slider(
     step=1
 )
 
-if st.sidebar.button("Train Model"):
-    preprocess(training_text)
-    train(epochs)
-    st.rerun()  # Aktualisiert die App sauber nach dem Neu-Trainieren
-
-st.sidebar.header("Sampling Demonstration")
-if st.sidebar.button("🎲 Resample"):
-    st.rerun()
+s_col_1, s_col_2 = st.sidebar.columns(2)
+with s_col_1:
+    if st.sidebar.button("Retrain"):
+        preprocess(training_text)
+        train(epochs)
+        st.rerun()  # Aktualisiert die App sauber nach dem Neu-Trainieren
+with s_col_2:
+    if st.sidebar.button("Resample"):
+        st.rerun()
 
 # Loss Plot
 st.sidebar.header("Loss Plot")
