@@ -93,6 +93,10 @@ if st.sidebar.button("Train Model"):
     train(epochs)
     st.rerun()  # Aktualisiert die App sauber nach dem Neu-Trainieren
 
+st.sidebar.header("Sampling Demonstration")
+if st.sidebar.button("🎲 Resample"):
+    st.rerun()
+
 # Loss Plot
 st.sidebar.header("Loss Plot")
 fig, ax = plt.subplots()
