@@ -87,12 +87,6 @@ top_k = st.sidebar.slider(
     step=1
 )
 
-# Button in der Sidebar für erneutes Samplen
-st.sidebar.header("Sampling Demonstration")
-if st.sidebar.button("🎲 Resample"):
-    torch.seed()
-    st.rerun()
-
 if st.sidebar.button("📉 Retrain"):
     preprocess(training_text)
     train(epochs)
