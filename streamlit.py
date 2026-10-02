@@ -70,7 +70,7 @@ training_text = st.sidebar.text_area(
 )
 
 epochs = st.sidebar.slider("Anzahl Epochen", 0, 100, 50)
-temp = st.sidebar.slider("Temperatur", min_value=0.1, max_value=8.0, value=0.3, step=0.1)
+temp = st.sidebar.slider("Temperatur", min_value=0.1, max_value=8.0, value=2.0, step=0.1)
 
 if "pp" not in st.session_state:
     preprocess(training_text)
