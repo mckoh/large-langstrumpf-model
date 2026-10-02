@@ -87,15 +87,19 @@ top_k = st.sidebar.slider(
     step=1
 )
 
+# Button in der Sidebar für erneutes Samplen
+st.sidebar.header("Sampling Demonstration")
 if st.sidebar.button("🎲 Resample"):
+    torch.seed()
     st.rerun()
 
-if st.sidebar.button("🌀 Retrain"):
+if st.sidebar.button("📉 Retrain"):
     preprocess(training_text)
     train(epochs)
     st.rerun()  # Aktualisiert die App sauber nach dem Neu-Trainieren
 
 # Loss Plot
+st.sidebar.header("Loss Plot")
 fig, ax = plt.subplots()
 ax.plot(st.session_state["loss"], label="Train Loss")
 ax.set_xlabel("Iterationen")
@@ -126,7 +130,6 @@ with tab2:
 
 with tab1:
     # Get Test Input
-    st.header("Modell Testen")
     word = st.selectbox("Welches Wort wollen wir durch das Modell schicken?", clean(training_text).split())
     word = st.session_state["pp"].transform(word)
 
@@ -169,13 +172,25 @@ with tab1:
 
         # Top-K Sampling Logic
         topk_probs, topk_indices = torch.topk(probs, k=top_k)
-        topk_indices_list = topk_indices.tolist()  # Liste für den schnellen Abgleich bei der Formatierung
-        # Renormieren der Wahrscheinlichkeiten für die ausgewählten Top-K Tokens
+        topk_indices_list = topk_indices.tolist()
         topk_probs_normalized = topk_probs / torch.sum(topk_probs)
-        # Zufällige Auswahl eines Wortes basierend auf den verbleibenden Wahrscheinlichkeiten
-        selected_relative_idx = torch.multinomial(topk_probs_normalized, num_samples=1).item()
-        selected_word_idx = topk_indices[selected_relative_idx].item()
-        selected_word = st.session_state["words"][selected_word_idx]
+
+        # Sicherstellen, dass bei k > 1 ein Wechsel erzwungen wird, falls gewünscht
+        last_word = st.session_state.get("last_selected_word", None)
+
+        # Bis zu 10 Versuche, ein neues Wort aus den Top-K zu ziehen
+        for _ in range(10):
+            selected_relative_idx = torch.multinomial(topk_probs_normalized, num_samples=1).item()
+            selected_word_idx = topk_indices[selected_relative_idx].item()
+            candidate_word = st.session_state["words"][selected_word_idx]
+
+            # Wenn k > 1 ist und ein anderes Wort gezogen wurde, aufhören
+            if top_k == 1 or candidate_word != last_word:
+                break
+
+        selected_word = candidate_word
+        st.session_state["last_selected_word"] = selected_word
+
 
     # Berechne die Y-Position des ausgewählten Wortes, damit der Punkt genau auf der Höhe der Zeile liegt
     words_list = list(st.session_state["words"])
@@ -329,7 +344,7 @@ with tab5:
 
 st.sidebar.markdown(
     "<div style='text-align:center; color:#999; margin-top:60px;'>"
-    "Made with ❤️ by <br> Michael Kohlegger (2026)"
+    "Made with ❤️ by <br> Michael Kohlegger-Ascher (2026)"
     "</div>",
     unsafe_allow_html=True
 )
